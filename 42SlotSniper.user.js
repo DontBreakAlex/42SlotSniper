@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.0.1
+// @version  1.0.2
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
@@ -17,6 +17,20 @@
 // @updateURL https://openuserjs.org/meta/DontBreakAlex/42_Slot_Sniper.meta.js
 // @downloadURL https://openuserjs.org/install/DontBreakAlex/42_Slot_Sniper.user.js
 // ==/UserScript==
+
+/**
+ * Add a style element to the document head and insert css into it
+ * @param {string} css The CSS content
+ */
+function addGlobalStyle(css) {
+    let head, style;
+    head = document.getElementsByTagName('head')[0];
+    if (!head) { return; }
+    style = document.createElement('style');
+    style.type = 'text/css', style.innerHTML = css;
+    head.appendChild(style);
+}
+addGlobalStyle('@keyframes pulse{0%{box-shadow:0 0 4px 1px #78c5d5}25%{box-shadow:0 0 4px 1px #79c268}50%{box-shadow:0 0 4px 1px #f5d63d}75%{box-shadow:0 0 4px 1px #e868a1}100%{box-shadow:0 0 4px 1px #bf63a6}}@keyframes pulse-bg{0%{background-color:#78c5d5}25%{background-color:#79c268}50%{background-color:#f5d63d}75%{background-color:#e868a1}100%{background-color:#bf63a6}}.is-loading{animation-name:pulse,pulse-bg;animation-duration:2s;animation-timing-function:ease-in-out;animation-direction:alternate;animation-iteration-count:infinite;color:white;border-style:hidden;}');
 
 async function takeSlot(team, project, begin, end, id) {
 	let response = await fetch(
@@ -71,7 +85,15 @@ async function checkForSlots(team, project, begin, end) {
 		if (!button.dataset.started) {
 			console.debug("SNIPING IN PROGRESS !");
 			checkForSlots.interval = setInterval(checkForSlots, 5000, teamId, project, DataDate[0].dataset.date, DataDate[DataDate.length - 1].dataset.date);
+			button.classList.add("is-loading");
+			button.textContent = "SNIPING";
 			button.dataset.started = "!";
+		} else {
+			console.debug("SNIPING CANCELED !");
+			clearInterval(checkForSlots.interval);
+			button.textContent = "SNIPER";
+			button.classList.remove("is-loading");
+			delete button.dataset.started;
 		}
 	});
 	let container = document.querySelector("div.fc-left");
