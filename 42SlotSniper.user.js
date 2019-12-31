@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.0.0
+// @version  1.0.1
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
@@ -23,7 +23,6 @@ async function takeSlot(team, project, begin, end, id) {
 		`https://projects.intra.42.fr/projects/${project}/slots/${id}.json?team_id=${team}`, {
 		"credentials": "include",
 		"headers": {
-			"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0",
 			"Accept": "application/json, text/javascript, */*; q=0.01",
 			"Accept-Language": "en-US,en;q=0.5",
 			"X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content,
@@ -55,10 +54,9 @@ async function checkForSlots(team, project, begin, end) {
 	if (response.length) {
 		let message =	"Found slot for " + (new Date(response[0].start)).toLocaleString() +
 						"\nDo you want to take it ?";
-		if (window.confirm(message)) {
+		if (window.confirm(message))
 			takeSlot(team, project, begin, end, response[0].id);
-			clearInterval(checkForSlots.interval);
-		}
+		clearInterval(checkForSlots.interval);
 	}
 
 }
