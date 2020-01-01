@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.0.3
+// @version  1.0.4
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
@@ -77,7 +77,7 @@ async function checkForSlots(team, project, begin, end) {
 		let message =	"Found slot for " + (new Date(response[0].start)).toLocaleString() +
 						"\nDo you want to take it ?";
 		if (window.confirm(message))
-			takeSlot(team, project, begin, end, response[0].id);
+			takeSlot(team, project, begin, end, response[0].ids.split(',')[0]);
 		clearInterval(checkForSlots.interval);
 		stopSniping(checkForSlots.button, clearInterval.interval)
 	}
