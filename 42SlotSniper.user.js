@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.0.2
+// @version  1.0.3
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
@@ -31,6 +31,14 @@ function addGlobalStyle(css) {
     head.appendChild(style);
 }
 addGlobalStyle('@keyframes pulse{0%{box-shadow:0 0 4px 1px #78c5d5}25%{box-shadow:0 0 4px 1px #79c268}50%{box-shadow:0 0 4px 1px #f5d63d}75%{box-shadow:0 0 4px 1px #e868a1}100%{box-shadow:0 0 4px 1px #bf63a6}}@keyframes pulse-bg{0%{background-color:#78c5d5}25%{background-color:#79c268}50%{background-color:#f5d63d}75%{background-color:#e868a1}100%{background-color:#bf63a6}}.is-loading{animation-name:pulse,pulse-bg;animation-duration:2s;animation-timing-function:ease-in-out;animation-direction:alternate;animation-iteration-count:infinite;color:white;border-style:hidden;}');
+
+function stopSniping(button, interval) {
+	console.debug("SNIPING CANCELED !");
+	clearInterval(interval);
+	button.textContent = "SNIPER";
+	button.classList.remove("is-loading");
+	delete button.dataset.started;
+}
 
 async function takeSlot(team, project, begin, end, id) {
 	let response = await fetch(
@@ -71,15 +79,17 @@ async function checkForSlots(team, project, begin, end) {
 		if (window.confirm(message))
 			takeSlot(team, project, begin, end, response[0].id);
 		clearInterval(checkForSlots.interval);
+		stopSniping(checkForSlots.button, clearInterval.interval)
 	}
-
 }
+
 (async () => {
 	let teamId = window.location.search.split("=")[1];
 	let DataDate = document.getElementsByClassName("fc-day-header");
 	let project = /projects\/(.+)\//.exec(window.location.pathname)[1];
 
 	let button = document.createElement("button");
+	checkForSlots.button = button;
 	button.textContent = "SNIPER";
 	button.addEventListener("click", () => {
 		if (!button.dataset.started) {
@@ -88,13 +98,8 @@ async function checkForSlots(team, project, begin, end) {
 			button.classList.add("is-loading");
 			button.textContent = "SNIPING";
 			button.dataset.started = "!";
-		} else {
-			console.debug("SNIPING CANCELED !");
-			clearInterval(checkForSlots.interval);
-			button.textContent = "SNIPER";
-			button.classList.remove("is-loading");
-			delete button.dataset.started;
-		}
+		} else
+			stopSniping(button, checkForSlots.interval);
 	});
 	let container = document.querySelector("div.fc-left");
 	container.appendChild(button);
