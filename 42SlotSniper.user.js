@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.1.1
+// @version  1.1.2
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
@@ -97,7 +97,7 @@ class Sniper {
 }
 class Slot {
 	constructor(array) {
-		let begin = new Date(response.start), end = new Date(response.end);
+		let begin = new Date(array.start), end = new Date(array.end);
 		let parsedArray = array.ids.split(',');
 		let duration = (end - begin) / parsedArray.length;
 
