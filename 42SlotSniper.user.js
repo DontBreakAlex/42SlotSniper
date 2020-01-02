@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.1.0
+// @version  1.1.1
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
@@ -86,30 +86,49 @@ class Sniper {
 		response = await response.json();
 
 		if (response.length) {
-			let message =	"Found slot for " + (new Date(response[0].start)).toLocaleString() +
+			let slot = new Slot(response[0]);
+			let message =	"Found slot for " + slot.timeSlots[0].date.toLocaleString() +
 							"\nDo you want to take it ?";
 			if (window.confirm(message))
-				takeSlot(this.team, this.project, this.begin, this.end, response[0].ids.split(',')[0]);
+				slot.takeFirstSlot(this);
 			this.stop()
 		}
 	}
 }
+class Slot {
+	constructor(array) {
+		let begin = new Date(response.start), end = new Date(response.end);
+		let parsedArray = array.ids.split(',');
+		let duration = (end - begin) / parsedArray.length;
 
-async function takeSlot(team, project, begin, end, id) {
-	let response = await fetch(
-		`https://projects.intra.42.fr/projects/${project}/slots/${id}.json?team_id=${team}`, {
-		"credentials": "include",
-		"headers": {
-			"Accept": "application/json, text/javascript, */*; q=0.01",
-			"Accept-Language": "en-US,en;q=0.5",
-			"X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content,
-			"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-			"X-Requested-With": "XMLHttpRequest"
-		},
-		"body": `start=${begin}&end=${end}&_method=put`,
-		"method": "POST",
-		"mode": "cors"
-	});
+		this.timeSlots = parsedArray.map((elem, index) => {
+			return {
+				date: new Date(begin.getTime() + duration * index),
+				id: elem
+			};
+		})
+	}
+
+	takeSlot(sniper, id) {
+		fetch(
+			`https://projects.intra.42.fr/projects/${sniper.project}/slots/${id}.json?team_id=${sniper.team}`, {
+			"credentials": "include",
+			"headers": {
+				"Accept": "application/json, text/javascript, */*; q=0.01",
+				"Accept-Language": "en-US,en;q=0.5",
+				"X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content,
+				"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+				"X-Requested-With": "XMLHttpRequest"
+			},
+			"body": `start=${sniper.begin}&end=${sniper.end}&_method=put`,
+			"method": "POST",
+			"mode": "cors"
+		});
+	}
+
+	takeFirstSlot(sniper) {
+		this.takeSlot(sniper, this.timeSlots[0].id);
+	}
 }
 
 (async () => {
