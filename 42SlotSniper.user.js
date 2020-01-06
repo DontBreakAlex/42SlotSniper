@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.1.2
+// @version  1.2.0
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
@@ -86,15 +86,47 @@ class Sniper {
 		response = await response.json();
 
 		if (response.length) {
-			let slot = new Slot(response[0]);
-			let message =	"Found slot for " + slot.timeSlots[0].date.toLocaleString() +
-							"\nDo you want to take it ?";
-			if (window.confirm(message))
-				slot.takeFirstSlot(this);
-			this.stop()
+			let prom = this.getCurrentSlots();
+			let slots = response.map(elem => {
+				return new Slots(elem);
+			}).sort((a, b) => {
+				return a.timeSlots[0].date - b.timeSlots[0].date;
+			});
+			await prom;
+			for (elem of slots) {
+				let slot = elem.findSlot(this.correction);
+				if (slot) {
+					let message =	"Found slot for " + slot.date.toLocaleString() +
+									"\nDo you want to take it ?";
+					if (window.confirm(message))
+						elem.takeSlot(this, slot.id);
+					else {
+						this.stop()
+						return
+					}
+				}
+			}
+			console.info("Cannot take any slot because you already have corrections at the same time")
+		}
+	}
+
+	async getCurrentSlots() {
+		let parser = new DOMParser();
+		let page = await fetch(`https://projects.intra.42.fr/${this.project}/${this.login}`);
+
+		page = await page.text();
+		page = parser.parseFromString(page, 'text/html');
+
+		let slots = page.querySelectorAll("div.time span[data-long-date]");
+		if (slots.length) {
+			this.corrections = Array.from(slots).map(elem => {
+				return new Date(elem.dataset.longDate.slice(0, -6));
+			})
+			console.debug(this.corrections);
 		}
 	}
 }
+
 class Slot {
 	constructor(array) {
 		let begin = new Date(array.start), end = new Date(array.end);
@@ -128,6 +160,14 @@ class Slot {
 
 	takeFirstSlot(sniper) {
 		this.takeSlot(sniper, this.timeSlots[0].id);
+	}
+
+	findSlot(corrections) {
+		for (elem of this.timeSlots) {
+			if (!corrections.includes(elem.date))
+				return elem;
+		}
+		return false;
 	}
 }
 
