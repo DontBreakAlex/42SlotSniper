@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.2.0
+// @version  1.2.1
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
@@ -88,13 +88,13 @@ class Sniper {
 		if (response.length) {
 			let prom = this.getCurrentSlots();
 			let slots = response.map(elem => {
-				return new Slots(elem);
+				return new Slot(elem);
 			}).sort((a, b) => {
 				return a.timeSlots[0].date - b.timeSlots[0].date;
 			});
 			await prom;
-			for (elem of slots) {
-				let slot = elem.findSlot(this.correction);
+			for (let elem of slots) {
+				let slot = elem.findSlot(this.corrections);
 				if (slot) {
 					let message =	"Found slot for " + slot.date.toLocaleString() +
 									"\nDo you want to take it ?";
@@ -122,8 +122,8 @@ class Sniper {
 			this.corrections = Array.from(slots).map(elem => {
 				return new Date(elem.dataset.longDate.slice(0, -6));
 			})
-			console.debug(this.corrections);
-		}
+		} else
+			this.corrections = [];
 	}
 }
 
@@ -163,7 +163,7 @@ class Slot {
 	}
 
 	findSlot(corrections) {
-		for (elem of this.timeSlots) {
+		for (let elem of this.timeSlots) {
 			if (!corrections.includes(elem.date))
 				return elem;
 		}
