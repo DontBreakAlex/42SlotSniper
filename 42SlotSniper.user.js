@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.2.1
+// @version  1.2.2
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
@@ -100,10 +100,8 @@ class Sniper {
 									"\nDo you want to take it ?";
 					if (window.confirm(message))
 						elem.takeSlot(this, slot.id);
-					else {
-						this.stop()
-						return
-					}
+					this.stop()
+					return ;
 				}
 			}
 			console.info("Cannot take any slot because you already have corrections at the same time")
