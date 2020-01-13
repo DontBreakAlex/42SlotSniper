@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.2.2
+// @version  1.2.3
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
@@ -33,13 +33,14 @@
 
 class Sniper {
 	constructor() {
-		this.team = window.location.search.split("=")[1];
-		this.DataDate = document.getElementsByClassName("fc-day-header");
+		let date = new Date();
+		this.team = document.getElementById("calendar").dataset.indexUrl.split("=")[1];
 		this.project = /projects\/(.+)\//.exec(window.location.pathname)[1];
 		this.login = document.querySelector("span[data-login]").dataset.login;
 		this.button = document.createElement("button");
-		this.begin = this.DataDate[0].dataset.date;
-		this.end = this.DataDate[this.DataDate.length - 1].dataset.date;
+		this.begin = date.toISOString().slice(0, 10);
+		date.setDate(date.getDate() + 3);
+		this.end = date.toISOString().slice(0, 10);
 		this.period = 30000;
 
 		this.running = false;
