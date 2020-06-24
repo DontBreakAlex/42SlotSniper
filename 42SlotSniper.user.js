@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.2.3
+// @version  1.2.4
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
