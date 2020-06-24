@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.2.3
+// @version  1.2.4
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
@@ -97,6 +97,9 @@ class Sniper {
 			for (let elem of slots) {
 				let slot = elem.findSlot(this.corrections);
 				if (slot) {
+					let src = 'https://file-examples.com/wp-content/uploads/2017/11/file_example_MP3_700KB.mp3';
+					let audio = new Audio(src);
+					audio.play();
 					let message =	"Found slot for " + slot.date.toLocaleString() +
 									"\nDo you want to take it ?";
 					if (window.confirm(message))
