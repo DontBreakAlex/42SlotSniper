@@ -9,7 +9,7 @@
 
 // ==UserScript==
 // @name     42 Slot Sniper
-// @version  1.4.3
+// @version  1.4.4
 // @include  https://projects.intra.42.fr/projects/*/slots*
 // @run-at   document-idle
 // @license  GPL-3.0-or-later
@@ -50,6 +50,7 @@ class Sniper {
             else
                 this.stop();
         });
+        this.ignored = [];
 
         document.querySelector("div.fc-left").appendChild(this.button);
     }
@@ -97,21 +98,27 @@ class Sniper {
             await prom;
             for (let elem of slots) {
                 let slot = elem.findSlot(this.corrections);
-                if (slot) {
+                if (slot && this.ignored.indexOf(slot.id) < 0) {
                     let src = 'https://file-examples.com/wp-content/uploads/2017/11/file_example_MP3_700KB.mp3';
                     let audio = new Audio(src);
                     audio.play();
-                    let message =	"Found slot for " + slot.date.toLocaleString() +
+                    let message = "Found slot for " + slot.date.toLocaleString() +
                         "\nDo you want to take it ?";
                     this.logMessage(`Found slot for ${slot.date.toLocaleString()}`);
                     let hour = slot.date.getHours();
+                    let today = new Date();
+                    let day = slot.date.getDate();
+                    let month = slot.date.getMonth();
                     if (
-                        (hour >= 10 && hour <= 20) ||
+                        (hour >= 10 && hour <= 20 && day == today.getDate() && month == today.getMonth()) ||
                         window.confirm(message)
-                    )
+                    ) {
                         elem.takeSlot(this, slot.id);
-                    this.logMessage(`Took slot for ${slot.date.toLocaleString()}`);
-                    this.stop();
+                        this.logMessage(`Took slot for ${slot.date.toLocaleString()}`);
+                        this.stop();
+                    } else {
+                        this.ignored.push(slot.id);
+                    }
                     return;
                 }
             }
